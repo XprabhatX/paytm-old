@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken'
+import 'dotenv/config'
 
 function authMiddleware (req, res) {
-    const header = req.headers.authorizations
+    const header = req.headers.authorization
 
     if (!header || !header.startsWith('Bearer ')) {
         return res.status(403).json({})

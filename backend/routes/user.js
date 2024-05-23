@@ -91,6 +91,7 @@ const updateBody = zod.object({
 })
 
 router.put('/', authMiddleware, async (req, res) => {
+    console.log('Reached update request!')
     const { success } = updateBody.parse(req.body)
 
     if (!success) {
@@ -98,14 +99,32 @@ router.put('/', authMiddleware, async (req, res) => {
     }
 
     await User.updateOne({_id: req.userId}, req.body)
-    res.status(200).json({message: 'Error while updating'})
+    res.status(200).json({message: 'Successfully updated the data'})
 })
 
 router.get('/bulk', async (req , res) => {
-    const filterName = req.query.filter
-    const result = await User.find({$or: [ {firstName: filterName}, {lastName: filterName} ]})
+    const filterName = req.query.filter || ""
+    const users = await User.find({
+        $or: [{
+            firstName: {
+                "$regex": filterName
+            }
+        }, {
+            lastName: {
+                "$regex": filterName
+            }
+        }]
+    })
 
-    res.status(200).send(result)
+
+    res.status(200).json({
+        user: users.map(user => ({
+            username: user.username,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            _id: user._id
+        }))
+    })
 
 })
 
